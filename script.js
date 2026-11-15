@@ -1,7 +1,7 @@
 // ====== CONFIG (edit these) ======
-const SUPABASE_URL = "YOUR_URL";
-const SUPABASE_KEY = "YOUR_KEY"; // anon PUBLIC key only. NEVER put the service_role key in client code.
-const ADMIN_MODE = "simple";     // "simple" | "secure"  (see README + schema.sql MODE A / MODE B)
+const SUPABASE_URL = "https://jgpkjkwhfexkjvyzpqar.supabase.co";
+const SUPABASE_KEY = "sb_publishable_q6z3S8fROzE3nlyFIeUH4A_Dtg6xkCd"; // anon PUBLIC key only
+const ADMIN_MODE = "simple";     // "simple" | "secure"
 const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secure"
 
 (() => {
@@ -12,7 +12,7 @@ const CFG = {
   ADMIN_NAME: "atulya", MAX_LEN: 200, PAGE_FIRST: 100, PAGE_MORE: 50, DOM_CAP: 300, NEAR: 120,
   GROUP_MS: 120000, MIN_GAP: 1200, BURST_N: 8, BURST_MS: 30000, TYPE_THROTTLE: 2000, TYPE_TTL: 3000,
   BACKOFF_MAX: 30000, KEY: "chat_user_name", NAME_RE: /^[A-Za-z0-9 _-]{1,20}$/,
-  BAD_WORDS: ["damn", "shit", "fuck", "bitch", "asshole"], // extend freely
+  BAD_WORDS: ["damn", "shit", "fuck", "bitch", "asshole"],
   EMOJIS: ["😀","😂","🥹","😍","😎","🤔","😭","😡","👍","👎","🙏","👏","🔥","✨","💯","🎉","❤️","💜","💙","🥳","😴","🤝","👋","🙌","💀","🤯","😅","🌈"]
 };
 const COLS = "id,user_name,message,created_at";
@@ -21,8 +21,8 @@ const COLS = "id,user_name,message,created_at";
 const mem = {};
 const store = {
   get(k) { try { const v = sessionStorage.getItem(k); return v === null ? (mem[k] ?? null) : v; } catch (e) { return mem[k] ?? null; } },
-  set(k, v) { mem[k] = v; try { sessionStorage.setItem(k, v); } catch (e) { /* blocked */ } },
-  del(k) { delete mem[k]; try { sessionStorage.removeItem(k); } catch (e) { /* blocked */ } }
+  set(k, v) { mem[k] = v; try { sessionStorage.setItem(k, v); } catch (e) { } },
+  del(k) { delete mem[k]; try { sessionStorage.removeItem(k); } catch (e) { } }
 };
 
 /* ---------- state ---------- */
@@ -43,8 +43,7 @@ const ui = {
   modal: $("nameModal"), form: $("nameForm"), nameIn: $("nameIn"), pwWrap: $("pwWrap"), pw: $("pw"), err: $("nameErr"), join: $("join"),
   setup: $("setup"), toasts: $("toasts")
 };
-
-/* ---------- utils ---------- */
+  /* ---------- utils ---------- */
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 function uid() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -61,7 +60,6 @@ function dayLabel(t) {
   return new Date(t).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 }
 const badRe = CFG.BAD_WORDS.length ? new RegExp("\\b(" + CFG.BAD_WORDS.join("|") + ")\\b", "gi") : null;
-/** Strips control chars, collapses whitespace/newlines, masks profanity, enforces max length. */
 function sanitizeMessage(raw) {
   let s = String(raw).replace(/\r\n?/g, "\n")
     .replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g, "");
@@ -69,7 +67,6 @@ function sanitizeMessage(raw) {
   if (badRe) s = s.replace(badRe, (m) => "*".repeat(m.length));
   return s.slice(0, CFG.MAX_LEN);
 }
-/** Safe linkify: builds text nodes and <a> nodes only (http/https). Never uses innerHTML. */
 function linkify(text) {
   const frag = document.createDocumentFragment(), re = /https?:\/\/[^\s<>"'`]+/gi;
   let last = 0, m;
@@ -78,7 +75,7 @@ function linkify(text) {
     const t = url.match(/[.,;:!?)\]}]+$/);
     if (t) { trail = t[0]; url = url.slice(0, -trail.length); }
     let ok = false;
-    try { const u = new URL(url); ok = u.protocol === "http:" || u.protocol === "https:"; } catch (e) { /* invalid */ }
+    try { const u = new URL(url); ok = u.protocol === "http:" || u.protocol === "https:"; } catch (e) { }
     frag.append(text.slice(last, m.index));
     if (ok) { const a = el("a", null, url); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer nofollow"; frag.append(a); }
     else frag.append(url);
@@ -127,9 +124,8 @@ function autosize() {
   ui.input.style.height = "auto";
   ui.input.style.height = Math.min(ui.input.scrollHeight, 110) + "px";
   if (near) scrollBottom(false);
-}
-
-/* ---------- message rendering ---------- */
+    }
+  /* ---------- message rendering ---------- */
 function paintStatus(it) {
   const n = it.node;
   n.classList.toggle("sending", it.status === "sending");
@@ -140,7 +136,6 @@ function paintStatus(it) {
   if (it.status === "failed") { it.stEl.textContent = "Failed · tap to retry"; b.tabIndex = 0; b.setAttribute("role", "button"); }
   else { b.removeAttribute("tabindex"); b.removeAttribute("role"); }
 }
-/** Builds [divider?, message] for an item; sets it.node/it.div. */
 function build(it, prev, mode) {
   const row = it.row, t = it.t, own = row.user_name === st.me, frag = document.createDocumentFragment();
   it.div = (!prev || dayKey(prev.t) !== dayKey(t)) ? el("div", "day", dayLabel(t)) : null;
@@ -179,7 +174,6 @@ function confirmItem(it, row) {
   it.row = row; it.t = Date.parse(row.created_at) || it.t; it.status = "sent";
   it.timeEl.textContent = hhmm(it.t); paintStatus(it); noteTs(row);
 }
-/** Adds one message (de-duplicated by id). o: {fresh, pending, own} */
 function addRow(row, o) {
   o = o || {};
   const ex = st.byId.get(row.id);
@@ -200,7 +194,6 @@ function addRow(row, o) {
   }
   return it;
 }
-/** Renders many rows at once (history). prepend=true for older pages. */
 function renderBatch(rows, prepend) {
   const frag = document.createDocumentFragment(), made = [];
   let prev = null;
@@ -244,9 +237,8 @@ function removeById(id) {
   it.node.classList.add("leaving");
   it.node.addEventListener("animationend", fin, { once: true });
   setTimeout(fin, 450);
-}
-
-/* ---------- Supabase service ---------- */
+    }
+  /* ---------- Supabase service ---------- */
 async function fetchLatest() {
   const { data, error } = await sb.from("chat_messages").select(COLS).order("created_at", { ascending: false }).limit(CFG.PAGE_FIRST);
   if (error) throw error;
@@ -279,7 +271,7 @@ async function push(row) {
   st.sending = true; setSendState();
   try {
     const { data, error } = await sb.from("chat_messages").insert({ id: row.id, user_name: row.user_name, message: row.message }).select().single();
-    if (error && error.code !== "23505") throw error; // 23505 = already inserted (retry after timeout)
+    if (error && error.code !== "23505") throw error;
     if (it) confirmItem(it, data || row);
   } catch (e) {
     console.error("send", e);
@@ -307,7 +299,7 @@ async function deleteMsg(id) {
   const it = st.byId.get(id);
   if (!it || !st.isAdmin) return;
   const row = it.row;
-  removeById(id); // optimistic
+  removeById(id);
   try {
     const { data, error } = await sb.from("chat_messages").delete().eq("id", id).select("id");
     if (error) throw error;
@@ -324,7 +316,7 @@ function renderTyping() {
 function clearTyper(name) { if (st.typers.has(name)) { clearTimeout(st.typers.get(name)); st.typers.delete(name); renderTyping(); } }
 async function connect() {
   clearTimeout(st.timer); st.timer = null;
-  if (channel) { const old = channel; channel = null; try { await sb.removeChannel(old); } catch (e) { /* ignore */ } }
+  if (channel) { const old = channel; channel = null; try { await sb.removeChannel(old); } catch (e) { } }
   setStatus("connecting");
   const ch = sb.channel("chat-room", { config: { presence: { key: clientId }, broadcast: { self: false } } });
   channel = ch;
@@ -360,8 +352,7 @@ function handleDown() {
   st.timer = setTimeout(() => { st.timer = null; connect(); }, delay);
 }
 function reconnectNow() { st.retry = 0; clearTimeout(st.timer); st.timer = null; connect(); }
-
-/* ---------- session / modal ---------- */
+  /* ---------- session / modal ---------- */
 function nameError(msg) {
   ui.err.textContent = msg;
   ui.nameIn.classList.remove("shake"); void ui.nameIn.offsetWidth; ui.nameIn.classList.add("shake");
@@ -455,7 +446,7 @@ function bind() {
     ui.err.textContent = "";
     if (!(ADMIN_MODE === "secure" && ui.nameIn.value.trim().toLowerCase() === CFG.ADMIN_NAME)) ui.pwWrap.hidden = true;
   });
-  ui.modal.addEventListener("keydown", (e) => { // focus trap
+  ui.modal.addEventListener("keydown", (e) => {
     if (e.key !== "Tab") return;
     const f = [...ui.modal.querySelectorAll("input,button")].filter((x) => !x.disabled && x.offsetParent !== null);
     if (!f.length) return;
@@ -516,17 +507,4 @@ async function init() {
   ui.app.hidden = false;
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: ADMIN_MODE === "secure", autoRefreshToken: ADMIN_MODE === "secure" } });
-  } catch (e) { console.error(e); ui.app.hidden = true; ui.setup.hidden = false; return; }
-  bind(); updateCount(); setSendState();
-  const saved = store.get(CFG.KEY);
-  if (saved && CFG.NAME_RE.test(saved)) {
-    if (ADMIN_MODE === "secure" && saved.toLowerCase() === CFG.ADMIN_NAME) {
-      let has = false;
-      try { const { data } = await sb.auth.getSession(); has = !!(data && data.session); } catch (e) { console.error(e); }
-      if (!has) { store.del(CFG.KEY); showModal(); return; }
-    }
-    enter(saved);
-  } else showModal();
-}
-init();
-})();
+  } catch (e) { console.error(e); ui.app.h
