@@ -519,5 +519,24 @@ async function init() {
     enter(saved);
   } else showModal();
 }
+  /* ---------- AUTO CLEANUP (5000 MESSAGES LIMIT) ---------- */
+async function autoCleanup() {
+  try {
+    const { count, error } = await sb.from('chat_messages').select('*', { count: 'exact', head: true });
+    
+    if (count > 5000) {
+      console.log("Cleaning up old messages... Total: " + count);
+      const { data } = await sb.from('chat_messages').select('id').order('created_at', { ascending: true }).limit(100);
+      
+      if (data && data.length > 0) {
+        const idsToDelete = data.map(m => m.id);
+        await sb.from('chat_messages').delete().in('id', idsToDelete);
+        console.log("Deleted 100 old messages.");
+      }
+    }
+  } catch (e) {
+    console.error("Cleanup error:", e);
+  }
+}
 init();
 })();
