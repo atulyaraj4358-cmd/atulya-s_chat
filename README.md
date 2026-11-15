@@ -1,10 +1,5 @@
 # Atulya's Chat — liquid-glass realtime chat (GitHub Pages + Supabase)
 
-> ⚠️ **SECURITY WARNING.** In the default `ADMIN_MODE = "simple"`, "admin" is just the name `atulya`.
-> **Anyone can type that name**, and the simple-mode DELETE policy lets any holder of the public anon key
-> delete any message (even via the browser console). Use simple mode only for casual/private use.
-> For anything public, switch to `"secure"`.
-
 ## 5-step setup
 1. **Supabase project:** create one at supabase.com → *Project Settings → API*; copy the **Project URL** and the **anon public** key.
 2. **Database:** open *SQL Editor*, paste all of `schema.sql`, click *Run*.
