@@ -293,6 +293,8 @@ async function send() {
   ui.input.value = ""; autosize(); updateCount(); closeTray();
   addRow(row, { fresh: true, pending: true, own: true });
   await push(row);
+// Ye line add karni hai:
+if (Math.random() < 0.1) autoCleanup(); 
 }
 function retry(it) { if (st.sending || it.status !== "failed") return; it.status = "sending"; paintStatus(it); push(it.row); }
 async function deleteMsg(id) {
