@@ -237,7 +237,7 @@ function removeById(id) {
   it.node.classList.add("leaving");
   it.node.addEventListener("animationend", fin, { once: true });
   setTimeout(fin, 450);
-    }
+      }
   /* ---------- Supabase service ---------- */
 async function fetchLatest() {
   const { data, error } = await sb.from("chat_messages").select(COLS).order("created_at", { ascending: false }).limit(CFG.PAGE_FIRST);
@@ -507,4 +507,17 @@ async function init() {
   ui.app.hidden = false;
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: ADMIN_MODE === "secure", autoRefreshToken: ADMIN_MODE === "secure" } });
-  } catch (e) { console.error(e); ui.app.h
+  } catch (e) { console.error(e); ui.app.hidden = true; ui.setup.hidden = false; return; }
+  bind(); updateCount(); setSendState();
+  const saved = store.get(CFG.KEY);
+  if (saved && CFG.NAME_RE.test(saved)) {
+    if (ADMIN_MODE === "secure" && saved.toLowerCase() === CFG.ADMIN_NAME) {
+      let has = false;
+      try { const { data } = await sb.auth.getSession(); has = !!(data && data.session); } catch (e) { console.error(e); }
+      if (!has) { store.del(CFG.KEY); showModal(); return; }
+    }
+    enter(saved);
+  } else showModal();
+}
+init();
+})();
