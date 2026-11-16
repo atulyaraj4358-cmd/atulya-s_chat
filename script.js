@@ -1,10 +1,3 @@
-// ====== CONFIG (edit these) ======
-const SUPABASE_URL = " https://jgpkjkwhfexkjvyzpqar.supabase.co ";
-const SUPABASE_KEY = "sb_publishable_q6z3S8fROzE3nlyFIeUH4A_Dtg6xkCd"; // anon PUBLIC key only
-const ADMIN_MODE = "simple";     // "simple" | "secure"
-const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secure"
-
-(() => {
 "use strict";
 
 /* ---------- CONFIG ---------- */
