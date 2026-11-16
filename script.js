@@ -543,37 +543,3 @@ async function autoCleanup() {
 }
 init();
 })();
-/* ==========================================
-   AI BOT LOGIC (Gemini Integration)
-   ========================================== */
-const GEMINI_API_KEY = " AQ.Ab8RN6LRN33GKR7uAJOTasHMCR9nOtYPxCSiZkgqKzEJEig9Nw "; // <--- Yahan apni key daalna, bina space ke
-const GEMINI_MODEL = "gemini-1.5-flash";
-const AI_NAME = "Atulya AI";
-const AI_COOLDOWN_MS = 5000;
-const AI_MAX_LEN = 1000;
-
-async function askGemini(question) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 20000);
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
-        method: "POST", signal: ctrl.signal,
-        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: "You are Atulya AI, a helpful assistant inside a group chat. Reply concisely (under 700 characters), in plain text only. Be friendly and direct." }] },
-          contents: [{ role: "user", parts: [{ text: question }] }],
-          generationConfig: { maxOutputTokens: 1024 }
-        })
-      });
-    if (res.status === 429) throw new Error("AI is busy (rate limit). Try again shortly.");
-    if (!res.ok) throw new Error(`AI request failed (${res.status}).`);
-    const data = await res.json();
-    const cand = data.candidates?.[0];
-    const out = (cand?.content?.parts || []).filter(p => p.text).map(p => p.text).join("").trim();
-    if (!out) throw new Error("AI returned an empty answer.");
-    return out;
-  } catch (e) {
-    if (e.name === "AbortError") throw new Error("AI took too long. Try again.");
-    throw e;
-  } finally { clearTimeout(timer); }
-}
