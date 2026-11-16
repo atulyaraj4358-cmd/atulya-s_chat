@@ -577,37 +577,3 @@ async function askGemini(question) {
     throw e;
   } finally { clearTimeout(timer); }
 }
-
-// Ye function tab chalega jab tu /ai likhega
-window.handleAiCommand = async function(text) {
-  const cmd = text.match(/^\/ai(?:\s+([\s\S]*))?$/i);
-  if (!cmd) return false; // Agar /ai nahi hai, toh normal message ki tarah jane do
-  
-  const now = () => new Date().toISOString();
-  const say = (msg, id = uid()) => addRow({ id, user_name: AI_NAME, message: msg, created_at: now() }, { fresh: true });
-  const drop = (h, id) => { const el = h instanceof Element ? h : document.querySelector(`[data-id="${CSS.escape(id)}"]`); el?.remove(); };
-  
-  if (String(st.me).toLowerCase() === AI_NAME.toLowerCase()) { say("That name is reserved for the bot."); return true; }
-  
-  const q = (cmd[1] || "").trim().slice(0, 2000);
-  if (!q) { ui.input.value = ""; say("Usage: /ai your question"); return true; }
-  
-  const wait = AI_COOLDOWN_MS - (Date.now() - (st.aiLast || 0));
-  if (wait > 0) { say(`Easy! Try again in ${Math.ceil(wait / 1000)}s.`); return true; }
-  st.aiLast = Date.now();
-  ui.input.value = "";
-  
-  addRow({ id: uid(), user_name: st.me, message: text, created_at: now() }, { fresh: true, own: true });
-  const tid = uid();
-  const h = say("Atulya AI is thinking...", tid);
-  
-  let reply;
-  try { reply = await askGemini(q); } 
-  catch (e) { drop(h, tid); say(e.message || "AI is unavailable right now."); return true; }
-  drop(h, tid);
-  
-  if (reply.length > AI_MAX_LEN) reply = reply.slice(0, AI_MAX_LEN - 1) + "…";
-  try { await push({ id: uid(), user_name: AI_NAME, message: reply, created_at: now() }); } 
-  catch { say("Couldn't post the AI reply. Try again."); }
-  return true;
-};
