@@ -282,6 +282,7 @@ async function push(row) {
 async function send() {
   if (st.sending) return;
   const text = sanitizeMessage(ui.input.value);
+  if (await handleAiCommand(text)) return;
   if (!text) { ui.input.value = ""; autosize(); updateCount(); setSendState(); return; }
   const now = Date.now();
   st.sent = st.sent.filter((x) => now - x < CFG.BURST_MS);
