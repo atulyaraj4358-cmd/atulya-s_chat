@@ -6,7 +6,7 @@
  */
 
 // ===== CONFIG =====
-const GEMINI_API_KEY = "YOUR_KEY_HERE";
+const GEMINI_API_KEY = " AQ.Ab8RN6LRN33GKR7uAJOTasHMCR9nOtYPxCSiZkgqKzEJEig9Nw ";
 const GEMINI_MODEL   = "gemini-3.5-flash"; // verify at ai.google.dev/gemini-api/docs/models
 const AI_NAME        = "Atulya AI";
 const AI_COOLDOWN_MS = 5000;
