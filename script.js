@@ -146,14 +146,13 @@ function build(it, prev, mode) {
   it.div = (!prev || dayKey(prev.t) !== dayKey(t)) ? el("div", "day", dayLabel(t)) : null;
   if (it.div) frag.append(it.div);
   const grouped = !!prev && !it.div && prev.row.user_name === row.user_name && t - prev.t < CFG.GROUP_MS;
-  const n = el("div", "msg " + (own ? "own" : "other") + (grouped ? " grouped" : "") + (mode ? " " + mode : ""));
-  n.dataset.id = row.id;
-  if (!grouped) {
-    const nm = el("div", "name"), u = el("span", null, row.user_name);
-    u.style.color = nameColor(row.user_name);
-    nm.append(u);
-    if (row.user_name.toLowerCase() === CFG.ADMIN_NAME) nm.append(el("span", "badge", "✦ Admin"));
-    n.append(nm);
+  const isAdminUser = row.user_name.toLowerCase() === CFG.ADMIN_NAME;
+const displayName = isAdminUser ? "👑 Admin" : row.user_name; 
+const nm = el("div", "name"), u = el("span", null, displayName);
+u.style.color = isAdminUser ? "var(--purple)" : nameColor(row.user_name);
+nm.append(u);
+if (isAdminUser) nm.append(el("span", "badge", "✦ Admin"));
+n.append(nm);
   }
   const line = el("div", "line"), bub = el("div", "bubble glass"), txt = el("div", "text"), meta = el("div", "meta");
   txt.append(linkify(row.message));
