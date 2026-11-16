@@ -1,6 +1,6 @@
 // ====== CONFIG (edit these) ======
 const SUPABASE_URL = "https://jgpkjkwhfexkjvyzpqar.supabase.co";
-const SUPABASE_KEY = "YOUR_KEY"; // anon PUBLIC key only. NEVER put the service_role key in client code.
+const SUPABASE_KEY = "sb_publishable_q6z3S8fROzE3nlyFIeUH4A_Dtg6xkCd"; // anon PUBLIC key only. NEVER put the service_role key in client code.
 const ADMIN_MODE = "simple";     // "simple" | "secure"  (see README + schema.sql MODE A / MODE B)
 const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secure"
 
