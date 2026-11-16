@@ -1,0 +1,34 @@
+/* perf.css - load AFTER style.css. Same look, far fewer GPU-heavy effects. */
+
+/* 1) Aurora: soft radial gradients instead of blur() filters + blend modes */
+.bg{contain:paint}
+.blob{filter:none!important;mix-blend-mode:normal;will-change:auto;opacity:.55}
+.b1{background:radial-gradient(circle,var(--blue) 0,transparent 68%)}
+.b2{background:radial-gradient(circle,var(--purple) 0,transparent 68%)}
+.b3{background:radial-gradient(circle,var(--pink) 0,transparent 68%)}
+.b4{background:radial-gradient(circle,var(--teal) 0,transparent 68%)}
+.b5{background:radial-gradient(circle,var(--purple) 0,transparent 68%);opacity:.3}
+
+/* 2) Orbs: no backdrop blur / filter, still 3D-looking */
+.orb{-webkit-backdrop-filter:none;backdrop-filter:none;filter:none!important;
+  box-shadow:inset -6px -8px 18px rgba(0,0,0,.35),inset 4px 6px 12px rgba(255,255,255,.18)}
+
+/* 3) Message bubbles: no backdrop-filter, no mask border, no big shadow */
+.bubble{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.bubble::before{display:none}
+.own .bubble{background:linear-gradient(135deg,rgba(10,132,255,.82),rgba(150,80,230,.82))}
+.other .bubble{background:rgba(30,32,52,.75)}
+
+/* 4) Header + input pill keep glass, but lighter blur */
+.hdr,.field{-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:0 6px 20px rgba(0,0,0,.3),var(--hl)}
+.pill,.confirm,.toast,.menu,.tray{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+
+/* 5) Focus ring: static gradient (no rotating 700px layer) */
+.ring::before{left:0;top:0;width:100%;height:100%;margin:0;animation:none;background:linear-gradient(90deg,var(--blue),var(--purple),var(--pink))}
+
+/* 6) Phones: fewer layers */
+@media (max-width:600px){.b5,.o3,.o5,.o6{display:none}}
+
+/* Ultra-lite (uncomment if a very old phone still lags):
+.blob,.orb{animation:none}
+*/

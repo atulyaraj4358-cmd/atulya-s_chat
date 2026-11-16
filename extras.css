@@ -1,0 +1,16 @@
+/* extras.css - add-on for Atulya's Chat (load after perf.css / style.css) */
+
+/* hide the admin's raw username, keep only the "✦ Admin" badge */
+.x-hide{display:none}
+.x-hide + .badge{margin-left:0}
+
+/* "who's online" button + panel */
+.ol-btn{position:relative}
+.ol-badge{position:absolute;top:3px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:var(--rp);display:grid;place-items:center;background:var(--green);color:#04210d;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.ol-panel{position:absolute;top:calc(100% + 8px);right:0;width:min(280px,86vw);max-height:50vh;overflow-y:auto;overscroll-behavior:contain;padding:var(--s2);border-radius:var(--r2);z-index:7;transform-origin:top right;animation:pop .35s var(--spring) both}
+.ol-panel h3{margin:6px 10px;font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em}
+.ol-row{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:var(--r1);font-weight:500}
+.ol-row i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.ol-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ol-row small{flex:none;color:var(--t3);font-size:12px}
+.ol-empty{padding:12px 10px;color:var(--t2);font-size:13px}
