@@ -1,6 +1,6 @@
 // ====== CONFIG (edit these) ======
 const SUPABASE_URL = "https://jgpkjkwhfexkjvyzpqar.supabase.co";
-const SUPABASE_KEY = "sb_publishable_q6z3S8fROzE3nlyFIeUH4A_Dtg6xkCd"; // anon PUBLIC key only. NEVER put the service_role key in client code.
+const SUPABASE_KEY = "YOUR_KEY"; // anon PUBLIC key only. NEVER put the service_role key in client code.
 const ADMIN_MODE = "simple";     // "simple" | "secure"  (see README + schema.sql MODE A / MODE B)
 const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secure"
 
@@ -9,7 +9,7 @@ const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secur
 
 /* ---------- CONFIG ---------- */
 const CFG = {
-  ADMIN_NAME: "Adminraj", MAX_LEN: 200, PAGE_FIRST: 100, PAGE_MORE: 50, DOM_CAP: 300, NEAR: 120,
+  ADMIN_NAME: "atulya", MAX_LEN: 200, PAGE_FIRST: 100, PAGE_MORE: 50, DOM_CAP: 300, NEAR: 120,
   GROUP_MS: 120000, MIN_GAP: 1200, BURST_N: 8, BURST_MS: 30000, TYPE_THROTTLE: 2000, TYPE_TTL: 3000,
   BACKOFF_MAX: 30000, KEY: "chat_user_name", NAME_RE: /^[A-Za-z0-9 _-]{1,20}$/,
   BAD_WORDS: ["damn", "shit", "fuck", "bitch", "asshole"], // extend freely
@@ -146,13 +146,14 @@ function build(it, prev, mode) {
   it.div = (!prev || dayKey(prev.t) !== dayKey(t)) ? el("div", "day", dayLabel(t)) : null;
   if (it.div) frag.append(it.div);
   const grouped = !!prev && !it.div && prev.row.user_name === row.user_name && t - prev.t < CFG.GROUP_MS;
-  const isAdminUser = row.user_name.toLowerCase() === CFG.ADMIN_NAME;
-const displayName = isAdminUser ? "👑 Admin" : row.user_name; 
-const nm = el("div", "name"), u = el("span", null, displayName);
-u.style.color = isAdminUser ? "var(--purple)" : nameColor(row.user_name);
-nm.append(u);
-if (isAdminUser) nm.append(el("span", "badge", "✦ Admin"));
-n.append(nm);
+  const n = el("div", "msg " + (own ? "own" : "other") + (grouped ? " grouped" : "") + (mode ? " " + mode : ""));
+  n.dataset.id = row.id;
+  if (!grouped) {
+    const nm = el("div", "name"), u = el("span", null, row.user_name);
+    u.style.color = nameColor(row.user_name);
+    nm.append(u);
+    if (row.user_name.toLowerCase() === CFG.ADMIN_NAME) nm.append(el("span", "badge", "✦ Admin"));
+    n.append(nm);
   }
   const line = el("div", "line"), bub = el("div", "bubble glass"), txt = el("div", "text"), meta = el("div", "meta");
   txt.append(linkify(row.message));
