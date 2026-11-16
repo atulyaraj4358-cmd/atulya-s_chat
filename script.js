@@ -2,62 +2,55 @@
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+// --- Supabase Config ---
 const SUPABASE_URL = "https://jgpkjkwhfexkjvyzpqar.supabase.co"; 
-const SUPABASE_KEY = "sb_publishable_q6z3S8fROE3nlyFIeUH4A_Dtg6xkCd"; 
-
+const SUPABASE_KEY = "sb_publishable_q6z3S8fROzE3nlyFIeUH4A_Dtg6xkCd"; 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_NAME = "adminraj";
-const MAX_LEN = 200;
 const KEY_NAME = "chat_user_name";
 let myName = "", isAdmin = false, messages = [], isSending = false;
 
-/* UI Elements */
+// --- UI Elements ---
 const ui = {
   dot: $('#dot'), online: $('#online'), messages: $('#messages'), list: $('#list'), empty: $('#empty'),
-  input: $('#input'), send: $('#send'), count: $('#count'), modal: $('#nameModal'), form: $('#nameForm'),
-  nameIn: $('#nameIn'), err: $('#nameErr'), join: $('#join'), toasts: $('#toasts')
+  input: $('#input'), send: $('#send'), modal: $('#nameModal'), form: $('#nameForm'),
+  nameIn: $('#nameIn'), err: $('#nameErr'), toasts: $('#toasts')
 };
 
-/* Toast */
-function toast(msg, type = 'info') {
-  const t = document.createElement('div');
-  t.className = 'toast glass dark ' + type;
-  t.textContent = msg;
-  ui.toasts.append(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-/* App Start */
-async function init() {
+// --- Start App ---
+function init() {
   ui.modal.hidden = false;
   ui.nameIn.focus();
   const saved = sessionStorage.getItem(KEY_NAME);
-  if (saved) enterChat(saved);
+  if (saved) {
+    ui.nameIn.value = saved;
+    enterChat(saved);
+  }
 }
 
-/* Handle Name Submit */
+// --- Enter Chat ---
 ui.form.onsubmit = (e) => {
   e.preventDefault();
   const name = ui.nameIn.value.trim();
-  if (!name) return;
+  if (!name) {
+    ui.err.textContent = "Name required!";
+    return;
+  }
   sessionStorage.setItem(KEY_NAME, name);
   enterChat(name);
 };
 
-/* Enter Chat */
 function enterChat(name) {
   myName = name;
   isAdmin = name.toLowerCase() === ADMIN_NAME;
-  ui.modal.hidden = true;
-  ui.empty.hidden = true;
+  ui.modal.hidden = true; 
   loadMessages();
   setupRealtime();
-  scrollBottom();
 }
 
-/* Load Messages */
+// --- Load Messages ---
 async function loadMessages() {
   const { data } = await db.from('chat_messages').select('*').order('created_at', { ascending: true }).limit(100);
   if (data) {
@@ -67,7 +60,7 @@ async function loadMessages() {
   }
 }
 
-/* Render Messages */
+// --- Render ---
 function renderMessages() {
   ui.list.innerHTML = '';
   if (messages.length === 0) {
@@ -75,7 +68,7 @@ function renderMessages() {
     return;
   }
   ui.empty.hidden = true;
-
+  
   let lastUser = "";
   let lastTime = 0;
 
@@ -84,10 +77,9 @@ function renderMessages() {
     const isAdminMsg = msg.user_name.toLowerCase() === ADMIN_NAME;
     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const timeMs = new Date(msg.created_at).getTime();
-    
     const grouped = (msg.user_name === lastUser) && (timeMs - lastTime < 120000);
     
-    let html = `<div class="msg ${isMe ? 'own' : 'other'} ${grouped ? 'grouped' : ''}" data-id="${msg.id}">`;
+    let html = `<div class="msg ${isMe ? 'own' : 'other'} ${grouped ? 'grouped' : ''}">`;
     
     if (!grouped) {
       html += `<div class="name" style="color: ${isAdminMsg ? '#ff375f' : 'var(--blue)'}; font-weight: bold;">
@@ -109,7 +101,7 @@ function renderMessages() {
   });
 }
 
-/* Realtime */
+// --- Realtime ---
 function setupRealtime() {
   db.channel('chat-room')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
@@ -125,12 +117,12 @@ function setupRealtime() {
       renderMessages();
     })
     .subscribe((status) => {
-      ui.dot.className = 'dot ' + (status === 'SUBSCRIBED' ? 'ok' : 'off');
-      ui.online.textContent = status === 'SUBSCRIBED' ? 'Online' : 'Connecting...';
+      if(ui.dot) ui.dot.className = 'dot ' + (status === 'SUBSCRIBED' ? 'ok' : 'off');
+      if(ui.online) ui.online.textContent = status === 'SUBSCRIBED' ? 'Online' : 'Connecting...';
     });
 }
 
-/* Send Message */
+// --- Send ---
 ui.send.onclick = async () => {
   if (isSending) return;
   const text = ui.input.value.trim();
@@ -140,25 +132,23 @@ ui.send.onclick = async () => {
   ui.send.disabled = true;
   ui.input.value = "";
 
-  const { error } = await db.from('chat_messages').insert([{ user_name: myName, message: text }]);
-  
-  if (error) toast("Failed to send", "error");
+  await db.from('chat_messages').insert([{ user_name: myName, message: text }]);
   
   isSending = false;
   ui.send.disabled = false;
   ui.input.focus();
 };
 
-/* Delete Message */
+// --- Delete (Admin) ---
 window.deleteMsg = async (id) => {
   if (!isAdmin) return;
   if (!confirm("Delete this message?")) return;
   await db.from('chat_messages').delete().eq('id', id);
 };
 
-/* Auto Delete (5000 Limit) */
+// --- Auto Delete (5000) ---
 async function checkAutoDelete() {
-  if (Math.random() > 0.1) return; // Sirf 10% baar check karega
+  if (Math.random() > 0.1) return;
   const { count } = await db.from('chat_messages').select('*', { count: 'exact', head: true });
   if (count > 5000) {
     const { data } = await db.from('chat_messages').select('id').order('created_at', { ascending: true }).limit(100);
@@ -169,9 +159,10 @@ async function checkAutoDelete() {
   }
 }
 
-/* Scroll */
+// --- Helpers ---
 function scrollBottom() {
-  setTimeout(() => { ui.messages.scrollTop = ui.messages.scrollHeight; }, 100);
+  setTimeout(() => { if(ui.messages) ui.messages.scrollTop = ui.messages.scrollHeight; }, 100);
 }
 
+// --- Run ---
 init();
