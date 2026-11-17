@@ -11,7 +11,6 @@ const ui = { app: $("app"), list: $("list"), typeText: $("typeText"), skel: $("s
   form: $("nameForm"), nameIn: $("nameIn"), menu: $("menu"), menuBtn: $("menuBtn"), hdr: document.querySelector(".hdr") };
 if (!ui.list || !ui.hdr || !ui.menuBtn) return;
 
-// Check current user is admin
 function checkAdmin() {
   try {
     const name = sessionStorage.getItem(KEY) || "";
@@ -19,12 +18,12 @@ function checkAdmin() {
   } catch(e) { return false; }
 }
 
-/* ---------- 1) hide admin username & add admin controls ---------- */
-function maskNames() {
+/* ---------- 1) Admin Badge & Direct 3-Dot / Options Menu for Delete & Block ---------- */
+function setupAdminControls() {
   const isAdmin = checkAdmin();
 
   ui.list.querySelectorAll(".msg").forEach((msgNode) => {
-    // Admin badge / name hiding logic
+    // Hide raw admin name and show badge
     const s = msgNode.querySelector(".name > span:first-child");
     if (s) {
       const nx = s.nextElementSibling, hasBadge = !!(nx && nx.classList.contains("badge"));
@@ -33,66 +32,104 @@ function maskNames() {
       }
     }
 
-    // Agar hum admin hain, toh har message ke niche Delete aur Block button inject karo
-    if (isAdmin && !msgNode.querySelector(".admin-controls")) {
+    // Agar hum admin hain, toh har message ke line ke paas 3-dots / Admin menu add karo
+    if (isAdmin && !msgNode.querySelector(".admin-menu-container")) {
       const lineNode = msgNode.querySelector(".line");
-      if (lineNode && !lineNode.querySelector(".admin-controls")) {
+      if (lineNode) {
         const msgId = msgNode.dataset.id;
-        // Message ke andar se user ka naam nikalne ke liye
         const nameEl = msgNode.querySelector(".name span");
         const senderName = nameEl ? nameEl.textContent.trim() : "";
 
-        const ctrlDiv = document.createElement("div");
-        ctrlDiv.className = "admin-controls";
-        ctrlDiv.style.cssText = "display:flex; gap:6px; align-items:center; margin-top:4px;";
-        
-        // Delete Button
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.textContent = "🗑️ Delete";
-        delBtn.style.cssText = "background:rgba(255,69,58,0.2); color:#ff453a; border:1px solid rgba(255,69,58,0.4); padding:2px 8px; border-radius:8px; font-size:11px; cursor:pointer;";
-        delBtn.onclick = () => window.adminDeleteMsg(msgId);
-        ctrlDiv.append(delBtn);
+        // Container for 3-dots button and popup options
+        const menuWrapper = document.createElement("div");
+        menuWrapper.className = "admin-menu-container";
+        menuWrapper.style.cssText = "position:relative; display:inline-block; margin-left:6px; margin-right:6px;";
 
-        // Block Button (Agar sender khud admin nahi hai)
+        // 3-Dots Button
+        const dotsBtn = document.createElement("button");
+        dotsBtn.type = "button";
+        dotsBtn.textContent = "⋮";
+        dotsBtn.style.cssText = "background:rgba(255,255,255,0.1); color:#fff; border:none; width:28px; height:28px; border-radius:50%; font-size:16px; cursor:pointer; display:grid; place-items:center;";
+        
+        // Popup Options Panel (Hidden by default)
+        const optionsPanel = document.createElement("div");
+        optionsPanel.className = "admin-options-panel glass dark";
+        optionsPanel.style.cssText = "position:absolute; right:0; top:32px; background:rgba(20,20,35,0.95); border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:6px; display:none; z-index:10; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,0.5);";
+
+        // Delete Option
+        const delOpt = document.createElement("button");
+        delOpt.type = "button";
+        delOpt.textContent = "🗑️ Delete Message";
+        delOpt.style.cssText = "display:block; width:100%; background:none; border:none; color:#ff453a; padding:6px 12px; text-align:left; font-size:13px; cursor:pointer; border-radius:6px;";
+        delOpt.onclick = () => {
+          optionsPanel.style.display = "none";
+          window.adminDeleteMsg(msgId);
+        };
+        optionsPanel.append(delOpt);
+
+        // Block Option (Agar message khud admin ka nahi hai)
         if (senderName && !ADMINS.includes(senderName.toLowerCase())) {
-          const blockBtn = document.createElement("button");
-          blockBtn.type = "button";
-          blockBtn.textContent = "⏳ Block 1h";
-          blockBtn.style.cssText = "background:rgba(255,179,64,0.2); color:#ffb340; border:1px solid rgba(255,179,64,0.4); padding:2px 8px; border-radius:8px; font-size:11px; cursor:pointer;";
-          blockBtn.onclick = () => window.adminBlockUser(senderName);
-          ctrlDiv.append(blockBtn);
+          const blockOpt = document.createElement("button");
+          blockOpt.type = "button";
+          blockOpt.textContent = "⏳ Block User (1h)";
+          blockOpt.style.cssText = "display:block; width:100%; background:none; border:none; color:#ffb340; padding:6px 12px; text-align:left; font-size:13px; cursor:pointer; border-radius:6px;";
+          blockOpt.onclick = () => {
+            optionsPanel.style.display = "none";
+            window.adminBlockUser(senderName);
+          };
+          optionsPanel.append(blockOpt);
         }
 
-        lineNode.append(ctrlDiv);
+        // Toggle dropdown on 3-dots click
+        dotsBtn.onclick = (e) => {
+          e.stopPropagation();
+          // Close any other open panels first
+          document.querySelectorAll(".admin-options-panel").forEach(p => { if(p !== optionsPanel) p.style.display = "none"; });
+          optionsPanel.style.display = optionsPanel.style.display === "block" ? "none" : "block";
+        };
+
+        menuWrapper.append(dotsBtn, optionsPanel);
+        
+        // Own message aur other message ke hisaab se position adjust karna
+        if (msgNode.classList.contains("own")) {
+          lineNode.prepend(menuWrapper);
+        } else {
+          lineNode.append(menuWrapper);
+        }
       }
     }
   });
 }
 
-// Global functions for admin actions
+// Close dropdown when clicking outside
+document.addEventListener("click", () => {
+  document.querySelectorAll(".admin-options-panel").forEach(p => p.style.display = "none");
+}, { passive: true });
+
+// Global Action Functions
 window.adminDeleteMsg = async (id) => {
   if (!checkAdmin()) return alert("Access denied!");
   if (window.sbClient && window.sbClient.from) {
-    await window.sbClient.from("chat_messages").delete().eq("id", id);
-  } else {
-    // Fallback agar script.js ka instance global available ho
-    const msgEl = document.querySelector(`[data-id="${id}"]`);
-    if (msgEl) msgEl.remove();
+    const { error } = await window.sbClient.from("chat_messages").delete().eq("id", id);
+    if (error) alert("Delete failed!");
+    else {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) el.remove();
+    }
   }
 };
 
 window.adminBlockUser = (username) => {
   if (!checkAdmin()) return alert("Access denied!");
-  const blockUntil = new Date().getTime() + (60 * 60 * 1000); // 1 hour from now
+  const blockUntil = new Date().getTime() + (60 * 60 * 1000); // 1 hour
   localStorage.setItem("blocked_user_" + username.toLowerCase(), blockUntil);
   alert(`User "${username}" ko 1 ghante ke liye block kar diya gaya hai.`);
 };
 
-new MutationObserver(maskNames).observe(ui.list, { childList: true, subtree: true });
-maskNames();
+new MutationObserver(setupAdminControls).observe(ui.list, { childList: true, subtree: true });
+setupAdminControls();
 
-// Typing indicator fix for admin name
+// Typing indicator fix for admin
 const adminPat = ADMINS.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
 const adminTest = new RegExp(adminPat, "i"), adminAll = new RegExp(adminPat, "gi");
 new MutationObserver(() => {
@@ -100,10 +137,8 @@ new MutationObserver(() => {
   if (adminTest.test(t)) ui.typeText.textContent = t.replace(adminAll, "Admin");
 }).observe(ui.typeText, { childList: true, characterData: true, subtree: true });
 
-const h1 = document.querySelector(".ttl h1");
-if (TITLE && h1) h1.textContent = TITLE;
 
-// ---------- 2) who's online (Keeping existing functionality) ----------
+/* ---------- 2) Who's Online Counter & Panel ---------- */
 const configured = typeof SUPABASE_URL === "string" && /^https?:\/\//.test(SUPABASE_URL) &&
   typeof SUPABASE_KEY === "string" && !/YOUR_/.test(SUPABASE_URL + SUPABASE_KEY) && window.supabase;
 if (!configured) return;
@@ -207,3 +242,4 @@ function tryStart() {
 [ui.app, ui.modal, ui.skel].forEach((n) => { if (n) new MutationObserver(tryStart).observe(n, { attributes: true, attributeFilter: ["hidden"] }); });
 tryStart();
 })();
+    
