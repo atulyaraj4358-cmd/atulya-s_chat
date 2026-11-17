@@ -1,11 +1,8 @@
-/* extras.js - add-on for Atulya's Chat. Load AFTER script.js.
-   1) hides the admin's username in chat + typing text (shows only "✦ Admin")
-   2) adds a "who's online" button with the list of names */
+/* extras.js - add-on for Atulya's Chat. Load AFTER script.js. */
 (() => {
 "use strict";
 
-const ADMINS = ["adminraj", "atulya"]; // admin username(s) to hide (lowercase)
-const TITLE = null;       // optional: e.g. "Chat Room" to also replace the header title
+const ADMINS = ["atulya", "adminraj"]; // Admin usernames (lowercase)
 const KEY = "chat_user_name";
 const NAME_RE = /^[A-Za-z0-9 _-]{1,20}$/;
 
@@ -14,16 +11,88 @@ const ui = { app: $("app"), list: $("list"), typeText: $("typeText"), skel: $("s
   form: $("nameForm"), nameIn: $("nameIn"), menu: $("menu"), menuBtn: $("menuBtn"), hdr: document.querySelector(".hdr") };
 if (!ui.list || !ui.hdr || !ui.menuBtn) return;
 
-/* ---------- 1) hide admin username ---------- */
+// Check current user is admin
+function checkAdmin() {
+  try {
+    const name = sessionStorage.getItem(KEY) || "";
+    return ADMINS.includes(name.trim().toLowerCase());
+  } catch(e) { return false; }
+}
+
+/* ---------- 1) hide admin username & add admin controls ---------- */
 function maskNames() {
-  ui.list.querySelectorAll(".name > span:first-child").forEach((s) => {
-    const nx = s.nextElementSibling, hasBadge = !!(nx && nx.classList.contains("badge"));
-    if (!s.classList.contains("x-hide") && (hasBadge || ADMINS.indexOf(s.textContent.trim().toLowerCase()) > -1)) s.classList.add("x-hide");
+  const isAdmin = checkAdmin();
+
+  ui.list.querySelectorAll(".msg").forEach((msgNode) => {
+    // Admin badge / name hiding logic
+    const s = msgNode.querySelector(".name > span:first-child");
+    if (s) {
+      const nx = s.nextElementSibling, hasBadge = !!(nx && nx.classList.contains("badge"));
+      if (!s.classList.contains("x-hide") && (hasBadge || ADMINS.includes(s.textContent.trim().toLowerCase()))) {
+        s.classList.add("x-hide");
+      }
+    }
+
+    // Agar hum admin hain, toh har message ke niche Delete aur Block button inject karo
+    if (isAdmin && !msgNode.querySelector(".admin-controls")) {
+      const lineNode = msgNode.querySelector(".line");
+      if (lineNode && !lineNode.querySelector(".admin-controls")) {
+        const msgId = msgNode.dataset.id;
+        // Message ke andar se user ka naam nikalne ke liye
+        const nameEl = msgNode.querySelector(".name span");
+        const senderName = nameEl ? nameEl.textContent.trim() : "";
+
+        const ctrlDiv = document.createElement("div");
+        ctrlDiv.className = "admin-controls";
+        ctrlDiv.style.cssText = "display:flex; gap:6px; align-items:center; margin-top:4px;";
+        
+        // Delete Button
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.textContent = "🗑️ Delete";
+        delBtn.style.cssText = "background:rgba(255,69,58,0.2); color:#ff453a; border:1px solid rgba(255,69,58,0.4); padding:2px 8px; border-radius:8px; font-size:11px; cursor:pointer;";
+        delBtn.onclick = () => window.adminDeleteMsg(msgId);
+        ctrlDiv.append(delBtn);
+
+        // Block Button (Agar sender khud admin nahi hai)
+        if (senderName && !ADMINS.includes(senderName.toLowerCase())) {
+          const blockBtn = document.createElement("button");
+          blockBtn.type = "button";
+          blockBtn.textContent = "⏳ Block 1h";
+          blockBtn.style.cssText = "background:rgba(255,179,64,0.2); color:#ffb340; border:1px solid rgba(255,179,64,0.4); padding:2px 8px; border-radius:8px; font-size:11px; cursor:pointer;";
+          blockBtn.onclick = () => window.adminBlockUser(senderName);
+          ctrlDiv.append(blockBtn);
+        }
+
+        lineNode.append(ctrlDiv);
+      }
+    }
   });
 }
+
+// Global functions for admin actions
+window.adminDeleteMsg = async (id) => {
+  if (!checkAdmin()) return alert("Access denied!");
+  if (window.sbClient && window.sbClient.from) {
+    await window.sbClient.from("chat_messages").delete().eq("id", id);
+  } else {
+    // Fallback agar script.js ka instance global available ho
+    const msgEl = document.querySelector(`[data-id="${id}"]`);
+    if (msgEl) msgEl.remove();
+  }
+};
+
+window.adminBlockUser = (username) => {
+  if (!checkAdmin()) return alert("Access denied!");
+  const blockUntil = new Date().getTime() + (60 * 60 * 1000); // 1 hour from now
+  localStorage.setItem("blocked_user_" + username.toLowerCase(), blockUntil);
+  alert(`User "${username}" ko 1 ghante ke liye block kar diya gaya hai.`);
+};
+
 new MutationObserver(maskNames).observe(ui.list, { childList: true, subtree: true });
 maskNames();
 
+// Typing indicator fix for admin name
 const adminPat = ADMINS.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
 const adminTest = new RegExp(adminPat, "i"), adminAll = new RegExp(adminPat, "gi");
 new MutationObserver(() => {
@@ -34,7 +103,7 @@ new MutationObserver(() => {
 const h1 = document.querySelector(".ttl h1");
 if (TITLE && h1) h1.textContent = TITLE;
 
-/* ---------- 2) who's online ---------- */
+// ---------- 2) who's online (Keeping existing functionality) ----------
 const configured = typeof SUPABASE_URL === "string" && /^https?:\/\//.test(SUPABASE_URL) &&
   typeof SUPABASE_KEY === "string" && !/YOUR_/.test(SUPABASE_URL + SUPABASE_KEY) && window.supabase;
 if (!configured) return;
@@ -127,7 +196,7 @@ function retry() {
 }
 
 function tryStart() {
-  if (started || ui.app.hidden || !ui.modal.hidden || !ui.skel.hidden) return; // wait until joined + history loaded
+  if (started || ui.app.hidden || !ui.modal.hidden || !ui.skel.hidden) return;
   const n = readName();
   if (!n || !NAME_RE.test(n)) return;
   started = true; me = n; isAdmin = ADMINS.indexOf(n.toLowerCase()) > -1;
