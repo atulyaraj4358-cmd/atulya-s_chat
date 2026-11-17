@@ -1,6 +1,6 @@
 /* extras.css - add-on for Atulya's Chat (load after perf.css / style.css) */
 
-/* hide the admin's raw username, keep only the "✦ Admin" badge */
+/* admin username hidden, only the "✦ Admin" badge stays */
 .x-hide{display:none}
 .x-hide + .badge{margin-left:0}
 
@@ -14,15 +14,16 @@
 .ol-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ol-row small{flex:none;color:var(--t3);font-size:12px}
 .ol-empty{padding:12px 10px;color:var(--t2);font-size:13px}
-/* Fix messages container overflow so the 3-dots admin menu is fully visible */
-#messages { 
-  overflow: visible !important; 
-}
 
-/* Admin options dropdown styling */
-.admin-options-panel {
-  display: none;
-}
-.admin-options-panel button:hover { 
-  background: rgba(255,255,255,0.08); 
-}
+/* admin: ⋮ button on every message (old 🗑️ button hidden, menu does delete) */
+.msg .del,.msg .confirm{display:none!important}
+.ax-btn{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;line-height:1;color:var(--t1);background:var(--glass-bg-dark);border:1px solid var(--glass-border)}
+.ax-menu{position:fixed;z-index:70;width:210px;padding:var(--s2);border-radius:var(--r2);transform-origin:top right;animation:pop .3s var(--spring) both}
+.ax-menu h4{margin:4px 10px 6px;font-size:12px;font-weight:600;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ax-menu button{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:0 10px;border-radius:var(--r1);font-size:14px;font-weight:600;text-align:left}
+.ax-menu button:active{background:var(--glass-bg)}
+.ax-warn{color:var(--amber)}.ax-danger{color:var(--red)}.ax-ok{color:var(--green)}
+
+/* blocked user: input locked */
+.field.is-blocked{opacity:.7}
+#input:disabled{cursor:not-allowed}

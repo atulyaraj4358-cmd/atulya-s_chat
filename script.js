@@ -9,7 +9,7 @@ const ADMIN_EMAIL = "admin@example.com"; // used only when ADMIN_MODE === "secur
 
 /* ---------- CONFIG ---------- */
 const CFG = {
-  ADMIN_NAME: "Adminraj", MAX_LEN: 200, PAGE_FIRST: 100, PAGE_MORE: 50, DOM_CAP: 300, NEAR: 120,
+  ADMIN_NAME: "adminraj", MAX_LEN: 200, PAGE_FIRST: 100, PAGE_MORE: 50, DOM_CAP: 300, NEAR: 120,
   GROUP_MS: 120000, MIN_GAP: 1200, BURST_N: 8, BURST_MS: 30000, TYPE_THROTTLE: 2000, TYPE_TTL: 3000,
   BACKOFF_MAX: 30000, KEY: "chat_user_name", NAME_RE: /^[A-Za-z0-9 _-]{1,20}$/,
   BAD_WORDS: ["damn", "shit", "fuck", "bitch", "asshole"], // extend freely
