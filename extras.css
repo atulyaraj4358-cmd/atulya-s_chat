@@ -14,3 +14,15 @@
 .ol-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ol-row small{flex:none;color:var(--t3);font-size:12px}
 .ol-empty{padding:12px 10px;color:var(--t2);font-size:13px}
+/* Fix messages container overflow so the 3-dots admin menu is fully visible */
+#messages { 
+  overflow: visible !important; 
+}
+
+/* Admin options dropdown styling */
+.admin-options-panel {
+  display: none;
+}
+.admin-options-panel button:hover { 
+  background: rgba(255,255,255,0.08); 
+}
