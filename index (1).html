@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#05060F">
+<title>Atulya's Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="perf.css">
+<link rel="stylesheet" href="extras.css">
+<link rel="stylesheet" href="fun.css">  
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="blob b4"></i><i class="blob b5"></i>
+  <i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="orb o4"></i><i class="orb o5"></i><i class="orb o6"></i>
+</div>
+
+<div id="app" hidden>
+  <header class="hdr glass dark">
+    <span id="dot" class="dot" role="img" aria-label="Connecting"></span>
+    <div class="ttl"><h1>Atulya's Chat</h1><span id="online" class="sub">Connecting…</span></div>
+    <button id="menuBtn" class="ibtn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">⋯</button>
+    <div id="menu" class="menu glass dark" hidden><button id="changeName" type="button">Change name</button></div>
+  </header>
+
+  <main class="stage">
+    <div id="messages">
+      <button id="more" class="more" type="button" hidden>Load earlier messages</button>
+      <div id="skel" class="skels" aria-hidden="true">
+        <i class="skel w1"></i><i class="skel r w2"></i><i class="skel w3"></i><i class="skel r w1"></i><i class="skel w2"></i>
+      </div>
+      <div id="empty" class="empty glass dark" hidden><div class="ill">💬</div><p>No messages yet. Say hi 👋</p></div>
+      <div id="list" role="log" aria-live="polite" aria-label="Chat messages"></div>
+    </div>
+    <button id="pill" class="pill glass" type="button" aria-label="Scroll to latest messages">↓ Latest <b id="pillN">0</b></button>
+  </main>
+
+  <div id="typing" class="typing"><span id="typeText"></span><span class="tdots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+
+  <footer class="bar">
+    <div id="tray" class="tray glass dark" role="group" aria-label="Emoji"></div>
+    <div class="field glass dark">
+      <span class="ring" aria-hidden="true"></span>
+      <button id="emojiBtn" class="ibtn" type="button" aria-label="Emoji" aria-expanded="false">😊</button>
+      <textarea id="input" rows="1" maxlength="200" placeholder="Message" aria-label="Message" enterkeyhint="send" autocomplete="off"></textarea>
+      <span id="count" class="count">0/200</span>
+      <button id="send" class="send" type="button" aria-label="Send message" disabled>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<div id="nameModal" class="scrim" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <form id="nameForm" class="card glass dark" novalidate>
+    <div class="avatar" aria-hidden="true"></div>
+    <h2 id="mTitle">Welcome</h2>
+    <p class="sub">Pick a name to join the chat</p>
+    <label class="sr" for="nameIn">Your name</label>
+    <input id="nameIn" class="txt" type="text" maxlength="20" placeholder="Your name" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+    <div id="pwWrap" hidden><label class="sr" for="pw">Admin password</label><input id="pw" class="txt" type="password" placeholder="Admin password" autocomplete="current-password"></div>
+    <p id="nameErr" class="err" role="alert"></p>
+    <button id="join" class="btn" type="submit">Join Chat</button>
+  </form>
+</div>
+
+<section id="setup" class="scrim" hidden>
+  <div class="card glass dark" role="alert">
+    <div class="avatar" aria-hidden="true"></div>
+    <h2>Setup required</h2>
+    <p class="sub">Open <b>script.js</b> and set <code>SUPABASE_URL</code> and <code>SUPABASE_KEY</code> (anon public key). Then run <code>schema.sql</code> in the Supabase SQL editor. See README.md.</p>
+  </div>
+</section>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="script.js"></script>
+<script src="extras.js"></script>
+<script src="fun.js"></script>
+</body>
+</html>

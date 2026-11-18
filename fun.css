@@ -1,0 +1,19 @@
+/* fun.css - reactions, replies (add-on, load after extras.css) */
+.fx-reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;max-width:100%}
+.msg.own .fx-reacts{justify-content:flex-end}
+.fx-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:var(--rp);font-size:14px;background:var(--glass-bg-dark);border:1px solid var(--glass-border)}
+.fx-chip small{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--t2)}
+.fx-chip.mine{border-color:var(--blue);background:rgba(10,132,255,.3)}
+.fx-chip.mine small{color:#fff}
+.fx-pop{position:fixed;z-index:65;padding:var(--s2);border-radius:var(--r2);animation:pop .25s var(--spring) both}
+.fx-emojis{display:flex;gap:2px}
+.fx-emojis button{width:44px;height:44px;font-size:24px;border-radius:50%;transition:transform .15s var(--spring)}
+.fx-emojis button:active{transform:scale(1.3)}
+.fx-emojis button.on{background:rgba(10,132,255,.35)}
+.fx-replybtn{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin-top:4px;padding:0 12px;border-radius:var(--r1);font-size:14px;font-weight:600;border-top:1px solid var(--glass-border)}
+.fx-quote{margin:0 0 5px;padding:4px 8px;border-left:3px solid var(--teal);border-radius:6px;background:rgba(255,255,255,.1);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fx-quote b{display:block;font-size:11px;color:var(--teal)}
+.fx-replybar{display:flex;align-items:center;gap:var(--s2);margin-bottom:6px;padding:0 0 0 14px;border-radius:var(--r2);font-size:13px}
+.fx-rt{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--t2)}
+.fx-rt b{color:var(--t1)}
+.fx-replybar button{flex:none;width:44px;height:44px;font-size:18px;color:var(--t2)}
